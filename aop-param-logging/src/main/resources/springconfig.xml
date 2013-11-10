@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:util="http://www.springframework.org/schema/util"
+        xmlns:jee="http://www.springframework.org/schema/jee"
+        xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+       http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.0.xsd">
+
+
+	<!-- 
+   Proxy Bean configuration :
+   AOP terminology: Here, we bind proxy to target and weave it with pointcut.
+   Normal English : Define interface for proxy, define target that proxy wraps, 
+                    define which advices need to be invoked by proxy before 
+                    delegating call to target.
+   -->
+	<bean id="proxyBean" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="proxyInterfaces">
+			<value>com.yahoo.sharmaak.aopexamples.app.SampleInterface</value>
+		</property>
+		<property name="target">
+			<ref local="targetBean" />
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>theTracingBeforeAdvisor</value>
+			</list>
+		</property>
+	</bean>
+
+   <!-- This is the target bean which will be proxied -->
+	<bean id="targetBean" class="com.yahoo.sharmaak.aopexamples.app.SampleInterfaceImpl"/>
+
+   <!-- 
+   Here, the advice is defined. Remember - an advice defines what and when:
+   - What needs to be executed
+   - When it needs to be executed
+   -->
+	<bean id="theTracingBeforeAdvisor"
+		class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<property name="advice">
+			<ref
+				local="com.yahoo.sharmaak.aopexamples.pointcut.validators.BeforeAdviceExample" />
+		</property>
+		<property name="pattern">
+			<value>.*</value>
+		</property>
+	</bean>
+
+
+	<!-- 
+   Create ben of the advice implementation. 
+   Simple english : This is the answer to 'What needs to be executed between proxy and target.'
+   -->
+	<bean
+		id="com.yahoo.sharmaak.aopexamples.pointcut.validators.BeforeAdviceExample"
+		class="com.yahoo.sharmaak.aopexamples.pointcut.validators.BeforeAdviceExample" />
+</beans>

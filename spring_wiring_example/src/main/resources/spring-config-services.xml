@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <import resource="spring-config-instrumentalists.xml"/>
+
+    <bean id="orchestra.BangaloreOrchestra"
+          class="com.amitcodes.spring.example.service.TheBangaloreRoyalOrchestra">
+        <property name="vocalist" ref="performer.Vocalist"/>
+        <property name="instrumentalists">
+            <list>
+                <ref bean="instrumentalist.DrumPlayer"/>
+                <ref bean="instrumentalist.ViolinPlayer"/>
+                <ref bean="instrumentalist.FlutePlayer"/>
+            </list>
+        </property>
+    </bean>
+</beans>

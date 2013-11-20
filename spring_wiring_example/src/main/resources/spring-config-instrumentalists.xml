@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <!-- We just imported beans defined in spring-config-instruments.xml into this file -->
+    <import resource="spring-config-instruments.xml" />
+
+    <!--
+    We redefine the 'performer.Vocalist' bean. This bean was also defined in the imported file
+    'spring-config-instruments.xml'. If a bean is defined in imported config file and is redefined
+    in the importing config, spring container respects the importing file's declaration. Hence
+    at runtime our vocalist should sing 'Bohemian Rhapsody'
+    -->
+    <bean id="performer.Vocalist" class="com.amitcodes.spring.example.performers.Vocalist">
+        <property name="lyrics" value="Bohemian Rhapsody"/>
+    </bean>
+
+    <!--
+    Define the *Player beans. The parent bean will be the 'performers.abstract.Instrumentalist'
+    bean defined in the parent xml.
+    -->
+    <bean id="instrumentalist.DrumPlayer"
+          parent="performers.abstract.Instrumentalist"
+          class="com.amitcodes.spring.example.performers.Instrumentalist">
+        <property name="instrument" ref="instrument.Drum" />
+    </bean>
+    <bean id="instrumentalist.ViolinPlayer"
+          parent="performers.abstract.Instrumentalist"
+          class="com.amitcodes.spring.example.performers.Instrumentalist">
+        <property name="instrument" ref="instrument.Violin" />
+    </bean>
+
+    <!--
+    Note that we did not define value for property 'instrument'. This should be inherited
+    from the declared parent bean 'performers.abstract.Instrumentalist' (defined in imported config
+    file spring-config-instruments.xml. Hence at runtime, the FlutePlayer should play flute by
+    virtue of bean inheritance.
+    -->
+    <bean id="instrumentalist.FlutePlayer"
+          parent="performers.abstract.Instrumentalist"
+          class="com.amitcodes.spring.example.performers.Instrumentalist"/>
+</beans>

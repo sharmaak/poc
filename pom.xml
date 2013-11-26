@@ -26,6 +26,7 @@
         <module>spring_aop_example</module>
         <module>spring_wiring_example</module>
         <module>restful_webservice_minimal</module>
+        <module>soap_minimal_contract_first_ws</module>
   </modules>
 
 </project>

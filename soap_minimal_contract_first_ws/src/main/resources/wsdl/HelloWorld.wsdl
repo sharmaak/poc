@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    - targetNamespace ..... Indicates that the elements defined by this schema come from
+                            'http://www.amitcodes.com' namespace.
+
+    - xmlns ............... Denotes that the default namespace is 'http://www.amitcodes.com'
+
+    http://www.w3.org/2001/03/14-annotated-WSDL-examples.html
+-->
+
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://www.amitcodes.com/"
+             targetNamespace="http://www.amitcodes.com/"
+             name="HelloService">
+
+    <types>
+        <schema targetNamespace="http://www.amitcodes.com/" xmlns="http://www.w3.org/2001/XMLSchema">
+            <element name="nameArg" type="xsd:string" />
+            <element name="Greeting">
+                <complexType>
+                    <sequence>
+                        <element name="value" type="xsd:string"/>
+                    </sequence>
+                </complexType>
+            </element>
+        </schema>
+    </types>
+
+    <!-- Define the method's input params -->
+    <message name="sayHelloRequestInput">
+        <part name="personName" element="tns:nameArg"/>
+    </message>
+
+    <!-- Define the method's return type -->
+    <message name="sayHelloResponseOutput">
+        <part name="response" element="tns:Greeting"/>
+    </message>
+
+    <!-- Define the library with method, input args and return type -->
+    <portType name="HelloPortType">
+        <!-- The method -->
+        <operation name="sayHello">
+            <!-- The input args -->
+            <input message="tns:sayHelloRequestInput"/>
+            <!-- The return type -->
+            <output message="tns:sayHelloResponseOutput"/>
+        </operation>
+    </portType>
+
+    <!-- WSDL bindings defines the message format and protocol details for a web service -->
+    <binding name="HelloBinding" type="tns:HelloPortType">
+        <!-- The __transport__ attribute defines the SOAP protocol to use. In this case we use HTTP -->
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="sayHello">
+            <!--
+            The SOAPAction HTTP request header field can be used to indicate
+            the intent of the SOAP HTTP request. The value is a URI identifying
+            the intent. SOAP places no restrictions on the format or specificity
+            of the URI or that it is resolvable. An HTTP client MUST use this
+            header field when issuing a SOAP HTTP Request.
+            -->
+            <soap:operation soapAction="http://www.amitcodes.com/sayHello"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="HelloService">
+        <port name="HelloPort" binding="tns:HelloBinding">
+            <soap:address location="http://localhost:8090/soap_minimal_contract_first_ws/hello.wsdl"/>
+        </port>
+    </service>
+</definitions>

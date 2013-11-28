@@ -22,7 +22,7 @@
     </build>
 
     <modules>
-        <module>clone_example</module>
+        <module>java_serialization</module>
         <module>spring_aop_example</module>
         <module>spring_wiring_example</module>
         <module>restful_webservice_minimal</module>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+                           http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
+                           http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- Substitute property placeholders -->
+    <context:property-placeholder/>
+
+    <!--Instantiate RabbitMQ Client Connection Factory-->
+    <bean id="rabbitmqConnectionFactory" class="com.rabbitmq.client.ConnectionFactory"/>
+    <!--Creates a rabbit CachingConnectionFactory-->
+    <rabbit:connection-factory id="amqpConnectionFactory"
+                               host="${rabbitmq.host}"
+                               virtual-host="${rabbitmq.vhost}"
+                               username="${rabbitmq.user}"
+                               password="${rabbitmq.password}"
+                               connection-factory="rabbitmqConnectionFactory" />
+
+
+    <bean id="jsonConverter" class="org.springframework.amqp.support.converter.JsonMessageConverter"/>
+
+    <rabbit:template id="amqpTemplate" connection-factory="amqpConnectionFactory" message-converter="jsonConverter"/>
+
+    <!--Create bean for consumer-->
+    <bean name="consumer" class="com.amitcodes.rabbitmq.hello.si.SIReceiver"/>
+
+    <!-- Define queue-->
+    <rabbit:queue durable="true" auto-delete="false" name="${rabbitmq.queue.name}"/>
+
+    <int:logging-channel-adapter id="loggingChannelAdapter" level="ERROR"/>
+    <int:logging-channel-adapter id="logWriter" level="INFO"/>
+
+    <int:channel id="writerInputChannel"/>
+
+    <int-amqp:inbound-channel-adapter
+            acknowledge-mode="NONE"
+            concurrent-consumers="${rabbitmq.concurrent.consumers}"
+            prefetch-count="${rabbitmq.prefetch.count}"
+            channel="writerInputChannel"
+            connection-factory="amqpConnectionFactory"
+            channel-transacted="false"
+            error-channel="loggingChannelAdapter"
+            mapped-request-headers="*"
+            queue-names="${rabbitmq.queue.name}"/>
+
+    <int:chain input-channel="writerInputChannel" output-channel="logWriter">
+        <int:service-activator ref="consumer"/>
+    </int:chain>
+
+</beans>

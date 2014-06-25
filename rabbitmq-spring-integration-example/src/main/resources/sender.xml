@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+		                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		                http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+                        http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
+                        http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- Substitute property placeholders -->
+    <context:property-placeholder/>
+
+    <!-- Prepare the connection factory -->
+    <bean id="rabbitmqConnectionFactory" class="com.rabbitmq.client.ConnectionFactory"/>
+    <rabbit:connection-factory id="amqpConnectionFactory"
+                               host="${rabbitmq.host}"
+                               virtual-host="${rabbitmq.vhost}"
+                               username="${rabbitmq.user}"
+                               password="${rabbitmq.password}"
+                               connection-factory="rabbitmqConnectionFactory" />
+
+    <bean id="jsonConverter" class="org.springframework.amqp.support.converter.JsonMessageConverter"/>
+    <rabbit:template id="amqpTemplate" connection-factory="amqpConnectionFactory" message-converter="jsonConverter"/>
+
+    <!--
+        The <rabbit:admin/> declaration by default automatically looks for beans of
+        type Queue, Exchange and Binding and declares them to the broker on behalf
+        of the user
+    -->
+    <rabbit:admin auto-startup="true" connection-factory="amqpConnectionFactory"/>
+
+    <!-- Begin: Declare queues -->
+    <rabbit:queue id="benchmark-queue" name="${rabbitmq.queue.name}" auto-delete="false" durable="true"/>
+    <!-- End: Declare queues -->
+
+    <!-- Begin: Bindings -->
+    <!--
+        + Bindings for a given exchange
+        + Bind queues to exchange
+        + Bind routing keys to queues
+    -->
+    <rabbit:direct-exchange name="Benchmark" auto-delete="false" durable="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="benchmark-queue" key="bmq"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+    <!-- End: Bindings -->
+
+    <!-- Declare a channel for communication -->
+    <int:channel id="fooChannel"/>
+
+    <!--
+        Declare outbound channel adapter. This contains 'channel' using which messages
+        will be sent to exchange
+    -->
+    <int-amqp:outbound-channel-adapter exchange-name="Benchmark"
+                                       channel="fooChannel"
+                                       amqp-template="amqpTemplate"
+                                       mapped-request-headers="*"
+                                       routing-key-expression="headers['routing_key']"/>
+    <!--
+        Define gateway. The gateway
+            - will push messages to 'default-request-channel'
+            - using return values of 'service-interface'.'method()'
+    -->
+    <int:gateway id="theGateway" service-interface="com.amitcodes.rabbitmq.hello.si.SISender"
+                 default-request-channel="fooChannel" >
+        <int:method name="push"/>
+    </int:gateway>
+
+</beans>

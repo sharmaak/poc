@@ -1,0 +1,9 @@
+rabbitmq.host=localhost
+rabbitmq.port=5672
+rabbitmq.vhost=/
+rabbitmq.user=guest
+rabbitmq.password=guest
+rabbitmq.queue.name=bmq
+
+rabbitmq.prefetch.count=10
+rabbitmq.concurrent.consumers=1

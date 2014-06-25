@@ -1,0 +1,8 @@
+rabbitmq.host=localhost
+rabbitmq.port=5672
+rabbitmq.vhost=/
+rabbitmq.user=guest
+rabbitmq.password=guest
+rabbitmq.queue.name=0
+spring.amqp.prefetch.count=10
+spring.amqp.concurrent.consumers=1
